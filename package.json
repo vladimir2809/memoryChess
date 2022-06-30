@@ -1,0 +1,9 @@
+{
+  "name": "chess-memory",
+  "version": "0.0.0",
+  "description": "chessMemory",
+  "main": "server.js",
+  "author": {
+    "name": ""
+  }
+}

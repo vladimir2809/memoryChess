@@ -1,0 +1,3 @@
+C:\Users\Вова\source\repos\chessMemory\chessMemory\obj\Debug\chessMemory.njsproj.AssemblyReference.cache
+C:\Users\Вова\source\repos\chessMemory\chessMemory\obj\Debug\chessMemory.njsproj.CoreCompileInputs.cache
+C:\Users\Вова\source\repos\chessMemory\chessMemory\bin\Microsoft.NodejsTools.WebRole.dll
