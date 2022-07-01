@@ -36,8 +36,12 @@ function initKeyboardAndMouse(keyArr)// инициализировать пер�
           }
     });
     window.addEventListener('mousemove', function (e) {
-        mouseX=e.pageX - e.target.offsetLeft;//event.clientX;
-        mouseY=e.pageY - e.target.offsetTop;//event.clientY;
+        //console.log(e.target.tagName);
+        if (e.target.tagName=='CANVAS')
+        {
+            mouseX=e.pageX - e.target.offsetLeft;//event.clientX;
+            mouseY=e.pageY - e.target.offsetTop;//event.clientY;
+        }
        // console.log("mX:"+mouseX+" mY:"+mouseY)
     });
     window.addEventListener('mousedown', function () {

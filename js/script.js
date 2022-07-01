@@ -1,19 +1,30 @@
 ﻿var context;
 var canvas;
+var canvasWidth = 1000;
+var canvasHeight = 800;
 var sizeCell = 60;
 var arrSimbol = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',];
 var arrNameFigure = ['king','queen','rook','bishop','knight','pawn'];
 var modeGame = 0;
+var countLoad = 0;
 var imageLoad = false;
 var imageFigures = null;
+var imageLabel = null;
 var arrFigure = [];
-var  x = 20;
-var  y = 20;
-var ofsX = 20;
+//var  x = 120;
+//var  y = 20;
+var ofsX = canvasWidth/2-(sizeCell*8)/2;
 var ofsY = 20;
 var xSetFigure = ofsX;
 var ySetFigure = sizeCell * 8 + ofsY;
 var arrFigureRand = [];
+var arrCheckFigure = [];
+var resultCheck = 0;
+var FigureCheck = {
+    xCell:null,
+    yCell:null,
+    result:0,
+}
 var FigureRand = {
     xCell:null,
     yCell:null,
@@ -55,7 +66,13 @@ var button = {
     width:100,
     height: 30,
     text: 'Проверить',
-    fontSize: 15,
+    fontSize: 18,
+}
+var bigText = {
+    being:false,
+    x:null,
+    y:null,
+    text:'',
 }
 window.addEventListener('load', function () {
     init();
@@ -66,12 +83,27 @@ function init()
     context = canvas.getContext("2d");
     imageFigures = new Image();
     imageFigures.src = 'img/setFigures3.png';
+    imageLabel = new Image();
+    imageLabel.src = 'img/label.png';
     let timeNow=new Date().getTime()
     srand(timeNow);
     imageFigures.onload = function () {
-        imageLoad = true;
+        countLoad++;
+        //imageLoad = true;
     }
     initKeyboardAndMouse();
+    imageFigures.onerror = function () {
+        alert("во время загрузки произошла ошибка");
+        //alert(pair[0].name);
+
+    }
+    imageLabel.onload = function () {
+        if (countLoad==1)  
+        {
+            imageLoad = true;
+            console.log("Загрузка успешна");
+        }
+    }
     imageFigures.onerror = function () {
         alert("во время загрузки произошла ошибка");
         //alert(pair[0].name);
@@ -81,13 +113,13 @@ function init()
     setInterval(drawAll, 16);
     setInterval(update, 16);
 }
-function drawAll() 
+function drawAll() //нарисовать все
 {
     context.fillStyle = 'rgb(210,210,210)';
     context.fillRect(0, 0, canvas.width, canvas.height);// очистка экрана
     drawChessBoard();
     //let y = sizeCell * 8 + ofsY;
-    for (let i = 0; i < arrFigure.length; i++) 
+    for (let i = 0; i < arrFigure.length; i++) // рисуем набор фигур
     {
         if (arrFigure[i].color == 0) {
             drawFigure(arrFigure[i].name, arrFigure[i].color, ofsX + sizeCell * i, ySetFigure);
@@ -97,7 +129,7 @@ function drawAll()
             drawFigure(arrFigure[i].name, arrFigure[i].color, ofsX + sizeCell * (i % arrNameFigure.length), ySetFigure + sizeCell);
         }
     }
-    for (let i = 0; i < 8;i++)
+    for (let i = 0; i < 8;i++)// рисуем фигуры на доске
     {
         for (let j = 0; j < 8; j++) 
         {
@@ -108,14 +140,31 @@ function drawAll()
             }
         }
     }
-    if (bufferFigure.using==true)
+    if (bufferFigure.using==true)// рисуем перемешающию фигуру
     {
         let n = bufferFigure.numFigure;
         drawFigure(arrFigure[n].name, arrFigure[n].color, bufferFigure.x,bufferFigure.y);
     }
-    drawButton(button);
+    for (let i = 0; i < arrCheckFigure.length;i++)// рисуем метки галочка и крестик при проверке 
+    {
+        var xCell = arrCheckFigure[i].xCell;
+        var yCell = arrCheckFigure[i].yCell;
+        if (arrCheckFigure[i].result==1)
+        {
+            context.drawImage(imageLabel, 0, 0, 40, 40, ofsX+xCell * sizeCell + sizeCell / 2,ofsY+yCell * sizeCell + sizeCell / 2, sizeCell / 2, sizeCell / 2);
+        }
+        if (arrCheckFigure[i].result==2)
+        {
+            context.drawImage(imageLabel, 40, 0, 40, 40, ofsX+xCell * sizeCell + sizeCell / 2,ofsY+yCell * sizeCell + sizeCell / 2, sizeCell / 2, sizeCell / 2);
+        }
+    }
+    drawButton(button);// рисуем кнопку
+    if (bigText.being==true)// рисуем текс по середине
+    {    
+        drawTextCenterScreen(bigText.text, 'Arial', 35, resultCheck==1?'Green':'Red');
+    }
 }
-function drawChessBoard()
+function drawChessBoard()// нарисовать доску
 {
   
     context.fillStyle = "green";
@@ -133,7 +182,7 @@ function drawChessBoard()
             }
            
             
-            context.fillRect(x + i * sizeCell, y + j * sizeCell, sizeCell, sizeCell);
+            context.fillRect(ofsX + i * sizeCell, ofsY + j * sizeCell, sizeCell, sizeCell);
         }
     }
     context.fillStyle = 'rgb(0,0,0)';
@@ -141,15 +190,15 @@ function drawChessBoard()
     for (let i = 0; i < 8;i++)
     {
         
-        context.fillText(arrSimbol[i],x+sizeCell/2+i*sizeCell,y-5)
+        context.fillText(arrSimbol[i],ofsX+sizeCell/2+i*sizeCell,ofsY-5)
     }
     for (let i = 0; i <8; i++) 
     {
 
-        context.fillText(8 - i + '', x + 5 + sizeCell * 8, y + sizeCell / 2 + i * sizeCell);
+        context.fillText(8 - i + '', ofsX + 5 + sizeCell * 8, ofsY + sizeCell / 2 + i * sizeCell);
     }
 }
-function drawFigure(name,color,x,y)
+function drawFigure(name,color,x,y)// нарисовать фигуру
 {
     for (let i = 0; i < arrFigure.length; i++) 
     {
@@ -159,7 +208,7 @@ function drawFigure(name,color,x,y)
         }
     }
 }
-function drawButton(obj)
+function drawButton(obj)// нарисовать кнопку
 {
     context.strokeStyle='rgb(0,0,255)';
     context.fillStyle='rgb(255,128,0)';
@@ -178,14 +227,29 @@ function drawButton(obj)
     context.closePath()
                       
 }
-function moveFigures()
+function drawTextCenterScreen(text,font,fontSize,color='rgb(255,128,0)')// нарисоваать текст по середине экрана
+{
+    context.fillStyle=color;
+    let heightText=fontSize;
+    context.beginPath();
+    context.font = fontSize+'px '+font;;
+    let metrics = context.measureText(text);
+    
+    let x=1;
+    let y=1;
+    let width=canvasWidth;
+   // context.strokeRect(this.widthTab*i,this.y,this.widthTab,20);
+    context.fillText(text,x+width/2-metrics.width/2,y+canvasHeight/2+fontSize/3);
+}
+function moveFigures()// функция отвечающия за перемещение фигур
 {
     let numFigure = null;
     if (checkMouseLeft()==true)
     {
+        // если из набора
         for (let i = 0; i < arrFigure.length;i++)
         {
-            if (mouseX > ofsX + sizeCell * (i % (arrFigure.length/2)) && mouseX < ofsX + sizeCell * ((i % (arrFigure.length/2)) + 1))
+            if (mouseX > ofsX + sizeCell * Math.trunc(i % (arrFigure.length/2)) && mouseX < ofsX + sizeCell * Math.trunc((i % (arrFigure.length/2)) + 1))
             {
                 if (i < (arrFigure.length / 2)) 
                 {
@@ -206,27 +270,30 @@ function moveFigures()
         if (numFigure != null) bufferFigure.fromBoard = false;
         let xCellBoard;//= Math.trunc((mouseX - ofsX) / sizeCell);
         let yCellBoard;//= Math.trunc((mouseY - ofsY) / sizeCell);
+        // если перемешаем из доски
         if (bufferFigure.using == false)
-        if (mouseX > ofsX && mouseX < ofsX + sizeCell * 8 && mouseY > ofsY && mouseY < ofsY + sizeCell * 8) 
         {
-            xCellBoard = Math.trunc((mouseX - ofsX) / sizeCell);
-            yCellBoard = Math.trunc((mouseY - ofsY) / sizeCell);
-            if (board[xCellBoard][yCellBoard] >= 0 && board[xCellBoard][yCellBoard] <= arrFigure.length)
+            if (mouseX > ofsX && mouseX < ofsX + sizeCell * 8 && mouseY > ofsY && mouseY < ofsY + sizeCell * 8) 
             {
-            
-            
-                if (mouseX > ofsX + xCellBoard * sizeCell && mouseX < ofsX + xCellBoard * sizeCell + sizeCell &&
-                    mouseY > ofsY + yCellBoard * sizeCell && mouseY < ofsY + yCellBoard * sizeCell + sizeCell) 
+                xCellBoard = Math.trunc((mouseX - ofsX) / sizeCell);
+                yCellBoard = Math.trunc((mouseY - ofsY) / sizeCell);
+                if (board[xCellBoard][yCellBoard] >= 0 && board[xCellBoard][yCellBoard] <= arrFigure.length)
                 {
-                    numFigure = board[xCellBoard][yCellBoard];
-                    board[xCellBoard][yCellBoard] = 15;
-                   // bufferFigure.using = true;
-                    bufferFigure.fromBoard = true;
+            
+            
+                    if (mouseX > ofsX + xCellBoard * sizeCell && mouseX < ofsX + xCellBoard * sizeCell + sizeCell &&
+                        mouseY > ofsY + yCellBoard * sizeCell && mouseY < ofsY + yCellBoard * sizeCell + sizeCell) 
+                    {
+                        numFigure = board[xCellBoard][yCellBoard];
+                        board[xCellBoard][yCellBoard] = 15;
+                       // bufferFigure.using = true;
+                        bufferFigure.fromBoard = true;
+                    }
                 }
+                //console.log(xCellBoard + ' ' + yCellBoard);
             }
-            console.log(xCellBoard + ' ' + yCellBoard);
         }
-        
+        // перемешение фигуры
         if (numFigure!=null && bufferFigure.using==false  )
         {
             if (bufferFigure.fromBoard == false) 
@@ -260,28 +327,93 @@ function moveFigures()
          
         }
     }   
+    // что делать если отпустили кнопку мыши
     if (checkMouseLeft() == false && bufferFigure.using == true)
     {
         bufferFigure.using = false;
-        if (bufferFigure.x > ofsX && bufferFigure.x < ofsX + sizeCell * 8 &&
-            bufferFigure.y > ofsY && bufferFigure.y < ofsY + sizeCell * 8)
+        if (mouseX > ofsX && mouseX< ofsX + sizeCell * 8 &&
+            mouseY > ofsY && mouseY < ofsY + sizeCell * 8)
         {
-            console.log('klcds');
+           // console.log('klcds');
             for (let i = 0; i < 8;i++)
             {
                 for (let j = 0; j < 8; j++)
                 {
-                    if (bufferFigure.x > i * sizeCell && bufferFigure.x <= i * sizeCell+sizeCell &&
-                        bufferFigure.y > j * sizeCell && bufferFigure.y <= j * sizeCell + sizeCell)
+                    //if (bufferFigure.x- sizeCell / 2 > ofsX + i * sizeCell  && bufferFigure.x - sizeCell / 2<=ofsX + i * sizeCell+sizeCell  &&
+                    //    bufferFigure.y- sizeCell / 2 > ofsY + j * sizeCell  && bufferFigure.y - sizeCell / 2<= ofsY + j * sizeCell + sizeCell )
+                    if (mouseX > ofsX + i * sizeCell  && mouseX <=ofsX + i * sizeCell + sizeCell  &&
+                        mouseY > ofsY + j * sizeCell  && mouseY <= ofsY + j * sizeCell + sizeCell )
                     {
                         board[i][j] = bufferFigure.numFigure;
+                        
                     }
                 }
             }
         }
     }
+    //console.log(bufferFigure.numFigure);
 }
-function updateFiguresRand(quantity)
+function checkFigureOnBoard()// проверить на фигуры на доске с тем что есть в памяти
+{
+    while (arrCheckFigure.length>0)// удалим массив с проверенными фигурами
+    {
+        arrCheckFigure.splice(0,1);
+    }
+    
+    var xCell=null;
+    var yCell=null;
+        // цикл по фигурам на доске
+    for (let j = 0; j < 8; j++)
+    {
+        for (let k = 0; k < 8; k++)
+        {
+            if (board[j][k]>=0 && board[j][k] <= arrFigure.length)// если на доске есть фигура
+            {
+                let checkFigureOne = clone(FigureCheck);
+                xCell = j;
+                yCell = k; 
+                checkFigureOne.xCell = xCell;
+                checkFigureOne.yCell = yCell;
+                let flag = false;
+             
+                for (let i = 0; i < arrFigureRand.length;i++)// цикл по фигурам в памяти
+                {   // если совпадает номер и координаты фигуры
+                    if (arrFigureRand[i].numFigure==board[xCell][yCell] && 
+                        arrFigureRand[i].xCell==xCell && arrFigureRand[i].yCell==yCell)
+                    {
+                        flag = true;
+                        break;
+                    }
+                        
+                }
+                if (flag==true)
+                {
+                    checkFigureOne.result = 1;
+                }
+                else
+                {
+                    checkFigureOne.result = 2;
+                }
+                arrCheckFigure.push(checkFigureOne);
+            }
+        }
+    }
+    // если на доске есть то количество фигур которрое в памяти то присвоем все верно
+    if (calcFigureOnBoard() == arrFigureRand.length) resultCheck = 1; else resultCheck = 2;
+    // если есть хоть один отрицательный результат проверенныйх фигур  то не присвоем не верно результату проверки
+    for (let i = 0; i < arrCheckFigure.length;i++)
+    {
+        if (arrCheckFigure[i].result==2)
+        {
+            resultCheck = 2;
+            break;
+        }
+    }
+    
+    //console.log(arrCheckFigure);
+    //console.log(arrFigureRand);
+}
+function updateFiguresRand(quantity)// обновить фигруы в памяти
 {
     while (arrFigureRand.length>0)
     {
@@ -290,14 +422,24 @@ function updateFiguresRand(quantity)
     for (let i = 0; i < quantity;i++)
     {
         let figureRandOne = clone(FigureRand);
-        figureRandOne.xCell = randomInteger(0,7);
-        figureRandOne.yCell = randomInteger(0,7);
-        figureRandOne.numFigure = randomInteger(0,11);
+        let flag = false;
+        do {
+            flag = false;
+            figureRandOne.xCell = randomInteger(0, 7);
+            figureRandOne.yCell = randomInteger(0, 7);
+            figureRandOne.numFigure = randomInteger(0, 11);
+            for (let i = 0; i < arrFigureRand.length; i++) {
+                if (figureRandOne.xCell == arrFigureRand[i].xCell &&
+                    figureRandOne.yCell == arrFigureRand[i].yCell) {
+                    flag = true;
+                }
+            }
+        } while (flag == true);
         arrFigureRand.push(figureRandOne);
     }
-
 }
-function clearBoard()
+
+function clearBoard()// очистить доску
 {
       for (let i = 0; i < 8;i++)
       {
@@ -307,33 +449,87 @@ function clearBoard()
             }
       }
 }
-function update()
+function fillRandFigureOnBoard()// заполнить доску фигурами из памяти
 {
-    if (modeGame==0)
+    for (let i = 0; i < arrFigureRand.length;i++)
     {
-        updateFiguresRand(5);
-        for (let i = 0; i < arrFigureRand.length;i++)
+        let xCell = arrFigureRand[i].xCell;
+        let yCell = arrFigureRand[i].yCell;   
+        board[xCell][yCell] = arrFigureRand[i].numFigure;
+    }
+}
+function calcFigureOnBoard()// посчитать фигуры на доске
+{
+    let count = 0;
+    for (let i = 0; i < 8;i++)
+    {
+        for (let j = 0; j < 8; j++)
         {
-            let xCell = arrFigureRand[i].xCell;
-            let yCell = arrFigureRand[i].yCell;
-            board[xCell][yCell] = arrFigureRand[i].numFigure;
+             if(board[i][j]>=0 && board[i][j]<=arrFigure.length)
+             {
+                 count++;
+             }
         }
+    }
+    return count;
+}
+function update()// обновление
+{
+    if (modeGame==0)// режим создания нового игрового цикла
+    {
+        clearBoard();
+        updateFiguresRand(3);
+        fillRandFigureOnBoard();
+        
         modeGame = 1;
     }
-    if (modeGame==1)
+    if (modeGame==1)//режим запоминания игроком
     {
-        if (mouseLeftClick())
+        button.text = 'Готов';
+        if (mouseLeftClick() && checkInObj(button,mouseX,mouseY))
         {
             clearBoard();
             modeGame = 2;
         }
     }
-    if (modeGame==2)
+    if (modeGame==2)// режим растановки фигур
     {
+        button.text = 'Проверить';
         moveFigures();
+        if (mouseLeftClick() && checkInObj(button,mouseX,mouseY) && calcFigureOnBoard()>0)
+        {
+            checkFigureOnBoard();
+            fillRandFigureOnBoard();
+            bigText.being = true;
+            if (resultCheck==1)
+            {
+                bigText.text ='все верно';
+            }
+            else if (resultCheck==2)
+            {
+                bigText.text= 'Не верно есть ошибки';
+            }
+            modeGame = 3;
+        }
     }
+    if (modeGame==3)// режим показа результатов 
+    {
+        button.text = 'Далее';
+
+        if (mouseLeftClick() && checkInObj(button,mouseX,mouseY))
+        {
+            while (arrCheckFigure.length>0)
+            {
+                arrCheckFigure.splice(0,1);
+            }
+            resultCheck = 0;
+            bigText.being = false;
+            modeGame = 0;
+        }
+    }
+   // console.log(mouseX+" "+mouseY);
 }
-function initFigure()
+function initFigure()// инициализировать фигуры нарезка из тайтла
 {
     let width = 33.3;
     let dist = 19.75;
@@ -349,9 +545,7 @@ function initFigure()
         figureOne.spWidth = width;
         figureOne.spHeight = width;
         arrFigure.push(figureOne);
-        
-
     }
-    console.log(arrFigure);
+    //console.log(arrFigure);
 }
 

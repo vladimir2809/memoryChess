@@ -48,6 +48,15 @@ function deleteElemArrToNum(array,num)// удалить обьект из мас
 //       console.log(array);
     }
 }
+function checkInObj(obj,x,y)
+{
+    if (x>obj.x && x<obj.x+obj.width &&
+            y>obj.y && y<obj.y+obj.height )
+    {
+        return true;
+    }
+    return false;
+}
 function checkElemArr(array,elem)// прверить есть ли элемент в массиве
 {
     var index = array.indexOf(elem);
