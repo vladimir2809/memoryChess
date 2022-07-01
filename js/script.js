@@ -1,11 +1,17 @@
 var context;
 var canvas;
-var sizeCell = 80;
+var sizeCell = 70;
 var arrSimbol = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',];
-var arrNameFigure = ['king','queen','bishop','rook','knight','pawn'];
+var arrNameFigure = ['king','queen','rook','bishop','knight','pawn'];
 var imageLoad = false;
 var imageFigures = null;
 var arrFigure = [];
+var  x = 20;
+var  y = 20;
+var ofsX = 20;
+var ofsY = 20;
+var xSetFigure = ofsX;
+var ySetFigure = sizeCell * 8 + ofsY;
 var Figure = {
     name:null,
     color:null,
@@ -15,6 +21,27 @@ var Figure = {
     spHeight:0,
 
 }
+var bufferFigure = {
+    using:false,
+    //xStartMove: null,
+    //yStartMove: null,
+    fromBoard: false,
+    x:null,
+    y:null,
+    numFigure:null,
+};
+var board = 
+    [
+        [15, 15, 15, 15, 15, 15, 15, 15],
+        [15, 15, 15, 15, 15, 15, 15, 15], 
+        [15, 15, 15, 15, 15, 15, 15, 15],
+        [15, 15, 15, 15, 15, 15, 15, 15], 
+        [15, 15, 15, 15, 15, 15, 15, 15],
+        [15, 15, 15, 15, 15, 15, 15, 15], 
+        [15, 15, 15, 15, 15, 15, 15, 15],
+        [15, 15, 15, 15, 15, 15, 15, 15],
+
+    ];
 window.addEventListener('load', function () {
     init();
 });
@@ -27,6 +54,7 @@ function init()
     imageFigures.onload = function () {
         imageLoad = true;
     }
+    initKeyboardAndMouse();
     imageFigures.onerror = function () {
         alert("во время загрузки произошла ошибка");
         //alert(pair[0].name);
@@ -41,25 +69,37 @@ function drawAll()
     context.fillStyle = 'rgb(210,210,210)';
     context.fillRect(0, 0, canvas.width, canvas.height);// очистка экрана
     drawChessBoard();
-    let y = 660;
+    //let y = sizeCell * 8 + ofsY;
     for (let i = 0; i < arrFigure.length; i++) 
     {
-        if (arrFigure[i].color == 0) 
-        {
-            drawFigure(arrFigure[i].name, arrFigure[i].color, 20 + sizeCell * i, y);
+        if (arrFigure[i].color == 0) {
+            drawFigure(arrFigure[i].name, arrFigure[i].color, ofsX + sizeCell * i, ySetFigure);
         }
         else
         {
-            drawFigure(arrFigure[i].name, arrFigure[i].color, 20 + sizeCell * (i%arrNameFigure.length), y+sizeCell);
+            drawFigure(arrFigure[i].name, arrFigure[i].color, ofsX + sizeCell * (i % arrNameFigure.length), ySetFigure + sizeCell);
         }
-        //drawFigure(arrNameFigure[i], 1, 20 + sizeCell * i, 20);
-
+    }
+    for (let i = 0; i < 8;i++)
+    {
+        for (let j = 0; j < 8; j++) 
+        {
+            if (board[i][j] >= 0 && board[i][j] <= arrFigure.length)
+            {
+                n = board[i][j];
+                drawFigure(arrFigure[n].name, arrFigure[n].color, ofsX + sizeCell * i, ofsY+sizeCell*j);
+            }
+        }
+    }
+    if (bufferFigure.using==true)
+    {
+        let n = bufferFigure.numFigure;
+        drawFigure(arrFigure[n].name, arrFigure[n].color, bufferFigure.x,bufferFigure.y);
     }
 }
 function drawChessBoard()
 {
-    let x=20;
-    let y =20;
+  
     context.fillStyle = "green";
     for (let i = 0; i < 8; i++)
     {
@@ -103,7 +143,107 @@ function drawFigure(name,color,x,y)
 }
 function update()
 {
-    
+    let numFigure = null;
+    if (checkMouseLeft()==true)
+    {
+        for (let i = 0; i < arrFigure.length;i++)
+        {
+            if (mouseX > ofsX + sizeCell * (i % (arrFigure.length/2)) && mouseX < ofsX + sizeCell * ((i % (arrFigure.length/2)) + 1))
+            {
+                if (i < (arrFigure.length / 2)) 
+                {
+                    if ( mouseY > ySetFigure && mouseY < ySetFigure + sizeCell) 
+                    {
+                        numFigure = i;
+                    }
+                }
+                else
+                {
+                    if (mouseY > ySetFigure + sizeCell && mouseY < ySetFigure + sizeCell*2) 
+                    {
+                        numFigure = i;
+                    }
+                }
+            }
+        }
+        if (numFigure != null) bufferFigure.fromBoard = false;
+        let xCellBoard;//= Math.trunc((mouseX - ofsX) / sizeCell);
+        let yCellBoard;//= Math.trunc((mouseY - ofsY) / sizeCell);
+        if (bufferFigure.using == false)
+        if (mouseX > ofsX && mouseX < ofsX + sizeCell * 8 && mouseY > ofsY && mouseY < ofsY + sizeCell * 8) 
+        {
+            xCellBoard = Math.trunc((mouseX - ofsX) / sizeCell);
+            yCellBoard = Math.trunc((mouseY - ofsY) / sizeCell);
+            if (board[xCellBoard][yCellBoard] >= 0 && board[xCellBoard][yCellBoard] <= arrFigure.length)
+            {
+            
+            
+                if (mouseX > ofsX + xCellBoard * sizeCell && mouseX < ofsX + xCellBoard * sizeCell + sizeCell &&
+                    mouseY > ofsY + yCellBoard * sizeCell && mouseY < ofsY + yCellBoard * sizeCell + sizeCell) 
+                {
+                    numFigure = board[xCellBoard][yCellBoard];
+                    board[xCellBoard][yCellBoard] = 15;
+                   // bufferFigure.using = true;
+                    bufferFigure.fromBoard = true;
+                }
+            }
+            console.log(xCellBoard + ' ' + yCellBoard);
+        }
+        
+        if (numFigure!=null && bufferFigure.using==false  )
+        {
+            if (bufferFigure.fromBoard == false) 
+            {
+                bufferFigure.using = true;
+                bufferFigure.x = ofsX + sizeCell * numFigure;
+                if (numFigure < arrFigure.length / 2) {
+                    bufferFigure.y = ySetFigure;
+                }
+                else {
+                    bufferFigure.y = ySetFigure + sizeCell;
+                }
+                bufferFigure.numFigure = numFigure;
+            }
+            else
+            {
+                bufferFigure.using = true;
+                bufferFigure.x = ofsX + sizeCell * xCellBoard;
+                bufferFigure.y = ofsY + sizeCell * yCellBoard;
+                bufferFigure.numFigure = numFigure;
+            }
+            //bufferFigure.xStartMove = bufferFigure.x - sizeCell +100;//mouseX;
+            //bufferFigure.yStartMove = bufferFigure.y - sizeCell+100;//mouseY;
+        }
+        if (bufferFigure.using==true)
+        {
+            //bufferFigure.x = bufferFigure.xStartMove + (mouseX - bufferFigure.xStartMove);
+            //bufferFigure.y = bufferFigure.yStartMove + (mouseY - bufferFigure.yStartMove);
+            bufferFigure.x = mouseX - sizeCell / 2;
+            bufferFigure.y = mouseY - sizeCell / 2;
+         
+        }
+    }   
+    if (checkMouseLeft()==false)
+    {
+        bufferFigure.using = false;
+        if (bufferFigure.x > ofsX && bufferFigure.x < ofsX + sizeCell * 8 &&
+            bufferFigure.y > ofsY && bufferFigure.y < ofsY + sizeCell * 8)
+        {
+            console.log('klcds');
+            for (let i = 0; i < 8;i++)
+            {
+                for (let j = 0; j < 8; j++)
+                {
+                    if (bufferFigure.x > i * sizeCell && bufferFigure.x <= i * sizeCell+sizeCell &&
+                        bufferFigure.y > j * sizeCell && bufferFigure.y <= j * sizeCell + sizeCell)
+                    {
+                        board[i][j] = bufferFigure.numFigure;
+                    }
+                }
+            }
+        }
+    }
+    //console.log(mouseX + ' ' + mouseY);
 }
 function initFigure()
 {
