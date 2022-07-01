@@ -1,8 +1,9 @@
-var context;
+п»їvar context;
 var canvas;
-var sizeCell = 70;
+var sizeCell = 60;
 var arrSimbol = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',];
 var arrNameFigure = ['king','queen','rook','bishop','knight','pawn'];
+var modeGame = 0;
 var imageLoad = false;
 var imageFigures = null;
 var arrFigure = [];
@@ -12,6 +13,12 @@ var ofsX = 20;
 var ofsY = 20;
 var xSetFigure = ofsX;
 var ySetFigure = sizeCell * 8 + ofsY;
+var arrFigureRand = [];
+var FigureRand = {
+    xCell:null,
+    yCell:null,
+    numFigure:null,
+}
 var Figure = {
     name:null,
     color:null,
@@ -42,6 +49,14 @@ var board =
         [15, 15, 15, 15, 15, 15, 15, 15],
 
     ];
+var button = {
+    x: ofsX+sizeCell * 6+15,
+    y: ofsY+sizeCell * 8+15,
+    width:100,
+    height: 30,
+    text: 'РџСЂРѕРІРµСЂРёС‚СЊ',
+    fontSize: 15,
+}
 window.addEventListener('load', function () {
     init();
 });
@@ -51,12 +66,14 @@ function init()
     context = canvas.getContext("2d");
     imageFigures = new Image();
     imageFigures.src = 'img/setFigures3.png';
+    let timeNow=new Date().getTime()
+    srand(timeNow);
     imageFigures.onload = function () {
         imageLoad = true;
     }
     initKeyboardAndMouse();
     imageFigures.onerror = function () {
-        alert("во время загрузки произошла ошибка");
+        alert("РІРѕ РІСЂРµРјСЏ Р·Р°РіСЂСѓР·РєРё РїСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР°");
         //alert(pair[0].name);
 
     }
@@ -67,7 +84,7 @@ function init()
 function drawAll() 
 {
     context.fillStyle = 'rgb(210,210,210)';
-    context.fillRect(0, 0, canvas.width, canvas.height);// очистка экрана
+    context.fillRect(0, 0, canvas.width, canvas.height);// РѕС‡РёСЃС‚РєР° СЌРєСЂР°РЅР°
     drawChessBoard();
     //let y = sizeCell * 8 + ofsY;
     for (let i = 0; i < arrFigure.length; i++) 
@@ -96,6 +113,7 @@ function drawAll()
         let n = bufferFigure.numFigure;
         drawFigure(arrFigure[n].name, arrFigure[n].color, bufferFigure.x,bufferFigure.y);
     }
+    drawButton(button);
 }
 function drawChessBoard()
 {
@@ -141,7 +159,26 @@ function drawFigure(name,color,x,y)
         }
     }
 }
-function update()
+function drawButton(obj)
+{
+    context.strokeStyle='rgb(0,0,255)';
+    context.fillStyle='rgb(255,128,0)';
+    context.strokeRect(obj.x,obj.y,obj.width,obj.height);
+    let heightText=obj.fontSize;
+    context.beginPath();
+    context.font = obj.fontSize+'px Arial';
+    let text=obj.text;
+    let metrics = context.measureText(text);
+    
+    let x=obj.x;
+    let y=obj.y;
+    let width=obj.width;
+   // context.strokeRect(this.widthTab*i,this.y,this.widthTab,20);
+    context.fillText(text,x+width/2-metrics.width/2,y+obj.height/2+obj.fontSize/3);
+    context.closePath()
+                      
+}
+function moveFigures()
 {
     let numFigure = null;
     if (checkMouseLeft()==true)
@@ -223,7 +260,7 @@ function update()
          
         }
     }   
-    if (checkMouseLeft()==false)
+    if (checkMouseLeft() == false && bufferFigure.using == true)
     {
         bufferFigure.using = false;
         if (bufferFigure.x > ofsX && bufferFigure.x < ofsX + sizeCell * 8 &&
@@ -243,7 +280,58 @@ function update()
             }
         }
     }
-    //console.log(mouseX + ' ' + mouseY);
+}
+function updateFiguresRand(quantity)
+{
+    while (arrFigureRand.length>0)
+    {
+        arrFigureRand.splice(0,1);
+    }
+    for (let i = 0; i < quantity;i++)
+    {
+        let figureRandOne = clone(FigureRand);
+        figureRandOne.xCell = randomInteger(0,7);
+        figureRandOne.yCell = randomInteger(0,7);
+        figureRandOne.numFigure = randomInteger(0,11);
+        arrFigureRand.push(figureRandOne);
+    }
+
+}
+function clearBoard()
+{
+      for (let i = 0; i < 8;i++)
+      {
+            for (let j = 0; j < 8; j++)
+            {
+                board[i][j] = 15;
+            }
+      }
+}
+function update()
+{
+    if (modeGame==0)
+    {
+        updateFiguresRand(5);
+        for (let i = 0; i < arrFigureRand.length;i++)
+        {
+            let xCell = arrFigureRand[i].xCell;
+            let yCell = arrFigureRand[i].yCell;
+            board[xCell][yCell] = arrFigureRand[i].numFigure;
+        }
+        modeGame = 1;
+    }
+    if (modeGame==1)
+    {
+        if (mouseLeftClick())
+        {
+            clearBoard();
+            modeGame = 2;
+        }
+    }
+    if (modeGame==2)
+    {
+        moveFigures();
+    }
 }
 function initFigure()
 {
