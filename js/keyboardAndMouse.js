@@ -4,7 +4,7 @@ var keyUpArr=[];
 var gameKeyArr=[];
 var mouseX=250;
 var mouseY=250;
-
+var mouseLeftPressTime = 0;
 var mouseLeftPress=false;
 var mouseClick=false;
 var wheelDelta=0;
@@ -52,6 +52,11 @@ function initKeyboardAndMouse(keyArr)// инициализировать пер�
         {
             mouseLeftPress=false;
             mouseClick=true;
+            //mouseLeftTime = new Date().getTime();;
+            //setTimeout(function () {
+            //    let timeNow=new Date().getTime();
+            //    if (100>mouseLeftClickTime-meNow)
+            //}, 100);
         } 
     });
     if (canvas.addEventListener) // событие врашеник колесиком
@@ -75,6 +80,21 @@ function initKeyboardAndMouse(keyArr)// инициализировать пер�
     { // IE8-
         canvas.attachEvent("onmousewheel", onWheel);
     }
+    setInterval(function () {
+        if (mouseLeftPress==true)
+        {
+            mouseLeftPressTime+=50;
+        }
+        else
+        {
+            mouseLeftPressTime = 0;
+        }
+
+    }, 50);
+}
+function leftPressMouseTime()
+{
+    return mouseLeftPressTime;
 }
 function onWheel(e)// если врашения колисика мыши
 {
@@ -105,6 +125,19 @@ function checkMouseLeft()// была лм нажата левая кнопка �
 function resetMouseLeft()
 {
     mouseClick=false;
+}
+function mouseLeftClickTime(time)
+{
+    let timeNow=new Date().getTime();
+    console.log(timeNow-mouseLeftTime);
+    if (mouseClick==true)
+    {
+        if (time<timeNow-mouseLeftTime )
+        {
+            return true;
+        }
+    }
+
 }
 function mouseLeftClick()// функция определения клика. после 1 вызова второй будет false
 {
