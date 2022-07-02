@@ -20,10 +20,13 @@ var ySetFigure = sizeCell * 8 + ofsY;
 var arrFigureRand = [];
 var arrCheckFigure = [];
 var resultCheck = 0;
-var quantityFigure = 18;
+var quantityFigure = 3;
 var FigureCheck = {
     xCell:null,
     yCell:null,
+    numFigure:null,
+    name: '',
+    color:null,
     result:0,
 }
 var FigureRand = {
@@ -31,6 +34,7 @@ var FigureRand = {
     yCell:null,
     numFigure:null,
     name:'',
+    color:null,
 }
 var Figure = {
     name:null,
@@ -185,8 +189,27 @@ function drawAll() //нарисовать все
         if (arrCheckFigure[i].result==2)
         {
             context.drawImage(imageLabel, 40, 0, 40, 40, ofsX+xCell * sizeCell + sizeCell / 2,ofsY+yCell * sizeCell + sizeCell / 2, sizeCell / 2, sizeCell / 2);
+            
         }
     }
+    if (modeGame==4 && resultCheck==2)
+    {
+        for (let i = 0; i < arrCheckFigure.length;i++)
+        {
+            for (let j= 0; j < arrFigureRand.length;j++)
+            {
+                if (arrCheckFigure[i].xCell==arrFigureRand[j].xCell &&
+                    arrCheckFigure[i].yCell==arrFigureRand[j].yCell && arrCheckFigure[i].result==2)
+                {
+                    drawFigure(arrCheckFigure[i].name, arrCheckFigure[i].color,
+                                ofsX + sizeCell * arrCheckFigure[i].xCell,
+                                ofsY + sizeCell *  arrCheckFigure[i].yCell, 0.38);
+                }
+            }
+        }
+        
+    }
+        
     drawButton(button);// рисуем кнопку
     drawButton(buttonMinusFigure);
     drawButton(buttonPlusFigure);
@@ -195,7 +218,23 @@ function drawAll() //нарисовать все
     drawText(Math.trunc(quantityFigure)+'', 25, xText, ofsY + sizeCell * 8 + 15 + 89);
     if (bigText.being==true)// рисуем текс по середине
     {    
-        drawTextCenterScreen(bigText.text, 'Arial', 35, resultCheck==1?'Green':'Red');
+        drawTextCenterScreen(bigText.text, 'Arial', 35, resultCheck==1?'Green':'Red',ofsY + sizeCell*4);
+    }
+    if (modeGame==0)
+    {
+        let x = ofsX + sizeCell*0-20;
+        let y = ofsY + sizeCell*4;
+        let yStep = 40;
+        color = 'Green';
+        font = "Arial";
+        fontSize = 25;
+        drawTextCenterScreen('Здравствуйте! Это приложение для тренировки памяти.', font, fontSize, color, y);
+        drawTextCenterScreen('Сначала на поле появится фигуры, а затем исчезнут.', font, fontSize, color, y+yStep)
+        drawTextCenterScreen('Вам нужно будет раставить фигуры, так как они стояли ранее.', font, fontSize, color, y+yStep*2);
+
+        //drawText('Здравствуйте! Это приложение для тренировки памяти.', 20,x,y,color);
+        //drawText('Сначала на поле появится фигуры, а затем исчезнут.', 20,x,y+30,color);
+        //drawText('Вам нужно будет раставить фигуры, так как они стояли ранее.', 20,x,y+60,color);
     }
 }
 function drawChessBoard()// нарисовать доску
@@ -232,13 +271,14 @@ function drawChessBoard()// нарисовать доску
         context.fillText(8 - i + '', ofsX + 5 + sizeCell * 8, ofsY + sizeCell / 2 + i * sizeCell);
     }
 }
-function drawFigure(name,color,x,y)// нарисовать фигуру
+function drawFigure(name,color,x,y,scale=1)// нарисовать фигуру
 {
     for (let i = 0; i < arrFigure.length; i++) 
     {
         if (color == arrFigure[i].color && name == arrFigure[i].name) 
         {
-            context.drawImage(imageFigures, arrFigure[i].xSp, arrFigure[i].ySp, arrFigure[i].spWidth, arrFigure[i].spHeight, x, y, sizeCell, sizeCell);
+            context.drawImage(imageFigures, arrFigure[i].xSp, arrFigure[i].ySp, arrFigure[i].spWidth, arrFigure[i].spHeight,
+                               x, y, sizeCell*scale, sizeCell*scale);
         }
     }
 }
@@ -261,14 +301,14 @@ function drawButton(obj)// нарисовать кнопку
     context.closePath()
                       
 }
-function drawText(text,fontSize,x,y)
+function drawText(text,fontSize,x,y,color='rgb(255,128,0')
 {
-    context.fillStyle='rgb(255,128,0)';
+    context.fillStyle=color;
     context.font = fontSize+'px Arial';
    // context.strokeRect(this.widthTab*i,this.y,this.widthTab,20);
     context.fillText(text,x,y);
 }
-function drawTextCenterScreen(text,font,fontSize,color='rgb(255,128,0)')// нарисоваать текст по середине экрана
+function drawTextCenterScreen(text,font,fontSize,color='rgb(255,128,0)',yText=null)// нарисоваать текст по середине экрана
 {
     context.fillStyle=color;
     let heightText=fontSize;
@@ -280,7 +320,7 @@ function drawTextCenterScreen(text,font,fontSize,color='rgb(255,128,0)')// на�
     let y=1;
     let width=canvasWidth;
    // context.strokeRect(this.widthTab*i,this.y,this.widthTab,20);
-    context.fillText(text,x+width/2-metrics.width/2,y+canvasHeight/2+fontSize/3);
+    context.fillText(text, x + width / 2 - metrics.width / 2, yText == null ? y + canvasHeight / 2 + fontSize / 3 : yText);
 }
 function moveFigures()// функция отвечающия за перемещение фигур
 {
@@ -415,6 +455,9 @@ function checkFigureOnBoard()// проверить на фигуры на дос
                 yCell = k; 
                 checkFigureOne.xCell = xCell;
                 checkFigureOne.yCell = yCell;
+                checkFigureOne.numFigure = board[j][k];
+                checkFigureOne.name= arrFigure[ board[j][k] ].name;
+                checkFigureOne.color = board[j][k] < arrFigure.length/2 ? 0 : 1;
                 let flag = false;
              
                 for (let i = 0; i < arrFigureRand.length;i++)// цикл по фигурам в памяти
@@ -473,8 +516,9 @@ function updateFiguresRand(quantity)// обновить фигруы в памя
                 flag = false;
                 if (i == 0) figureRandOne.numFigure = 0;
                 else if (i == 1) figureRandOne.numFigure = 6;
-                //else figureRandOne.numFigure = randomInteger(0, 11);//randomInteger(0, 11) > 5 ? 4 : 10;
-                else figureRandOne.numFigure = randomInteger(0, 11) > 5 ?  5: 11;
+                else figureRandOne.numFigure = randomInteger(0, 11);
+               // else figureRandOne.numFigure = randomInteger(0, 11) > 5 ?  5: 11;
+                figureRandOne.color= (figureRandOne.numFigure < arrFigure.length/2) ?  0: 1;
                 figureRandOne.name = arrFigure[figureRandOne.numFigure].name;
                 figureRandOne.xCell = randomInteger(0, 7);
                 figureRandOne.yCell = randomInteger(0, 7);
@@ -510,40 +554,40 @@ function updateFiguresRand(quantity)// обновить фигруы в памя
                         }
                     }
                 }
-                
-                if (figureRandOne.name=='rook')
+                for (let j = 0; j < arrFigureRand.length;j++)// цикл проверки шахов королес с другими фигурами
                 {
-                    for (let j = 0; j < arrFigureRand.length;j++)
+                    if (arrFigureRand[j].name=='king' && arrFigureRand[j].color != figureRandOne.color)
                     {
-                        if (arrFigureRand[j].name=='king')
+                        if (figureRandOne.name=='queen')
                         {
                             if (checkStraightLine(figureRandOne.xCell,figureRandOne.yCell,
                                                   arrFigureRand[j].xCell,arrFigureRand[j].yCell)==true)
                             {
                                 flag = true;
                             }
-                        }
-                    }
-                }
-                if (figureRandOne.name=='bishop')
-                {
-                    for (let j = 0; j < arrFigureRand.length;j++)
-                    {
-                        if (arrFigureRand[j].name=='king')
-                        {
                             if (checkDiagonaleLine(figureRandOne.xCell,figureRandOne.yCell,
                                                   arrFigureRand[j].xCell,arrFigureRand[j].yCell)==true)
                             {
                                 flag = true;
                             }
                         }
-                    }
-                }
-                if (figureRandOne.name=='knight')
-                {
-                    for (let j = 0; j < arrFigureRand.length;j++)
-                    {
-                        if (arrFigureRand[j].name=='king')
+                        if (figureRandOne.name=='rook')
+                        {
+                            if (checkStraightLine(figureRandOne.xCell,figureRandOne.yCell,
+                                                  arrFigureRand[j].xCell,arrFigureRand[j].yCell)==true)
+                            {
+                                flag = true;
+                            }
+                        }  
+                        if (figureRandOne.name=='bishop')
+                        {
+                            if (checkDiagonaleLine(figureRandOne.xCell,figureRandOne.yCell,
+                                                  arrFigureRand[j].xCell,arrFigureRand[j].yCell)==true)
+                            {
+                                flag = true;
+                            }
+                        }   
+                        if (figureRandOne.name=='knight')
                         {
                             if (checkKnightAttack(figureRandOne.xCell,figureRandOne.yCell,
                                                   arrFigureRand[j].xCell,arrFigureRand[j].yCell)==true)
@@ -551,17 +595,11 @@ function updateFiguresRand(quantity)// обновить фигруы в памя
                                 flag = true;
                             }
                         }
-                    }
-                }
-                if (figureRandOne.name=='pawn')
-                {
-                    for (let j = 0; j < arrFigureRand.length;j++)
-                    {
-                        if (arrFigureRand[j].name=='king')
+                        if (figureRandOne.name=='pawn')
                         {
-                            let color = figureRandOne.numFigure < (arrFigure.length / 2) ? 0 : 1;
+                            let color = figureRandOne.color;
                             if (checkPawnAttack(figureRandOne.xCell,figureRandOne.yCell,
-                                                  arrFigureRand[j].xCell,arrFigureRand[j].yCell,color)==true)
+                                            arrFigureRand[j].xCell,arrFigureRand[j].yCell,color)==true)
                             {
                                 flag = true;
                             }
@@ -575,12 +613,12 @@ function updateFiguresRand(quantity)// обновить фигруы в памя
                 listCheck[num].fact[color]--;
             }
             num = (figureRandOne.numFigure % (arrFigure.length / 2))
-            color = figureRandOne.numFigure < (arrFigure.length / 2) ? 0 : 1;
+            color = figureRandOne.color;//figureRandOne.numFigure < (arrFigure.length / 2) ? 0 : 1;
             listCheck[num].fact[color]++;
         } while (listCheck[num].fact[color]>listCheck[num].plan);
         arrFigureRand.push(figureRandOne);
     }
-    console.log(listCheck);
+    //console.log(listCheck);
 }
 function checkStraightLine(x,y,x1,y1)
 {
@@ -742,37 +780,64 @@ function update()// обновление
     {
         flagClick = true;
     }
- 
     if (modeGame==0)// режим создания нового игрового цикла
+    {
+        button.text = 'Старт';
+        if (flagClick==true && checkInObj(button,mouseX,mouseY))
+        { 
+            modeGame = 1;
+            flagClick = false;
+        }
+
+    }
+    if (modeGame==1)// режим создания нового игрового цикла
     {
         clearBoard();
         updateFiguresRand(Math.trunc(quantityFigure));
         fillRandFigureOnBoard();
         
-        modeGame = 1;
+        modeGame = 2;
     }
-    if (modeGame==1)//режим запоминания игроком
+    if (modeGame==2)//режим запоминания игроком
     {
         button.text = 'Готов';
-        if (checkKnightAttack(arrFigureRand[0].xCell,arrFigureRand[0].yCell,
-                                Math.trunc((mouseX-ofsX) / sizeCell),Math.trunc((mouseY-ofsY) / sizeCell)))
-        {
-            console.log('knight');
-        }
-        console.log(Math.trunc((mouseX - ofsX) / sizeCell)+'  '+ Math.trunc((mouseY - ofsY) / sizeCell));
+
+        //for (let i = 0; i < arrFigureRand.length;i++)
+        //{
+        //    if (arrFigureRand[i].name=='knight')
+        //    {
+        //        if (checkKnightAttack(arrFigureRand[i].xCell,arrFigureRand[i].yCell,
+        //                        Math.trunc((mouseX-ofsX) / sizeCell),Math.trunc((mouseY-ofsY) / sizeCell)))
+        //        {
+        //            console.log('knight');
+        //            break;
+        //        }
+        //    }
+        //    if (arrFigureRand[i].name=='pawn')
+        //    {
+        //       let color = arrFigureRand[i].numFigure < (arrFigure.length / 2) ? 0 : 1;
+        //       if (checkPawnAttack(arrFigureRand[i].xCell,arrFigureRand[i].yCell,
+        //                           Math.trunc((mouseX-ofsX) / sizeCell),Math.trunc((mouseY-ofsY) / sizeCell),color))
+        //       {
+        //           console.log('pawn '+color);
+        //           break;
+        //       }
+        //    }
+        //}
+        //console.log(Math.trunc((mouseX - ofsX) / sizeCell)+'  '+ Math.trunc((mouseY - ofsY) / sizeCell));
         if (flagClick==true && checkInObj(button,mouseX,mouseY))
         {
             clearBoard();
-            modeGame = 2;
+            modeGame = 3;
             flagClick = false;
         }
     }
-    if (modeGame==2)// режим растановки фигур
+    if (modeGame==3)// режим растановки фигур
     {
         button.text = 'Проверить';
         moveFigures();
       
-        if (flagClick==true && checkInObj(button,mouseX,mouseY)/* && calcFigureOnBoard()>0*/)
+        if (flagClick==true && checkInObj(button,mouseX,mouseY) && calcFigureOnBoard()>0)
         {
             checkFigureOnBoard();
             flagClick = false;
@@ -780,16 +845,16 @@ function update()// обновление
             bigText.being = true;
             if (resultCheck==1)
             {
-                bigText.text ='все верно';
+                bigText.text ='Все верно!';
             }
             else if (resultCheck==2)
             {
-                bigText.text= 'Не верно есть ошибки';
+                bigText.text= 'Не верно, есть ошибки!';
             }
-            modeGame = 3;
+            modeGame = 4;
         }
     }
-    if (modeGame==3)// режим показа результатов 
+    if (modeGame==4)// режим показа результатов 
     {
         button.text = 'Далее';
       
@@ -802,7 +867,7 @@ function update()// обновление
             }
             resultCheck = 0;
             bigText.being = false;
-            modeGame = 0;
+            modeGame = 1;
 
         }
     }
