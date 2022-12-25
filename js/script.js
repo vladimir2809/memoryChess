@@ -1,8 +1,9 @@
 ﻿var context;
 var canvas;
-var canvasWidth = 1000;
-var canvasHeight = 800;
-var sizeCell = 60;
+var canvasWidth = 1800;
+var canvasHeight = 1000;
+var sizeCellNormal = 60;
+var sizeCell = sizeCellNormal;
 var arrSimbol = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',];
 var arrNameFigure = ['king','queen','rook','bishop','knight','pawn'];
 var modeGame = 0;
@@ -88,7 +89,8 @@ var button = {
     width:100,
     height: 30,
     text: 'Проверить',
-    fontSize: 18,
+    fontSizeNormal: 18,
+    fontSize: this.fontSizeNormal,
 }
 var yButtonPlusMinus = 64;
 var buttonPlusFigure = {
@@ -97,7 +99,8 @@ var buttonPlusFigure = {
     width:30,
     height: 30,
     text: '+',
-    fontSize: 28,
+    fontSizeNormal: 28,
+    fontSize: this.fontSizeNormal,
 }
 var buttonMinusFigure = {
     x: ofsX+sizeCell * 6+15,
@@ -105,7 +108,8 @@ var buttonMinusFigure = {
     width:30,
     height: 30,
     text: '-',
-    fontSize: 28,
+    fontSizeNormal: 28,
+    fontSize: this.fontSizeNormal,
 }
 var bigText = {
     being:false,
@@ -152,6 +156,13 @@ function initGame()
 {
     canvas = document.getElementById("canvas");
     context = canvas.getContext("2d");
+    canvas.width = document.documentElement.clientWidth;
+    canvas.height = document.documentElement.clientHeight;
+    canvasWidth = canvas.width;
+    canvasHeight = canvas.height;
+    console.log(canvasWidth);
+    
+    updatePropertyForResize(canvasWidth, canvasHeight);
     imageFigures = new Image();
     imageFigures.src = 'img/setFigures3.png';
     imageLabel = new Image();
@@ -183,6 +194,45 @@ function initGame()
     initFigure();
     setInterval(drawAll, 16);
     setInterval(update, 16);
+}
+function updatePropertyForResize(canvasWidth,canvasHeight)
+{
+    if (canvasWidth<500)
+    {
+        sizeCell = canvasWidth / 10;;
+    }
+    else if (canvasHeight<sizeCellNormal*12)
+    {
+        sizeCell = canvasHeight / 12;
+    }
+    else
+    {
+        sizeCell = sizeCellNormal;
+    }
+    ofsX = (canvasWidth / 2 - (sizeCell * 8) / 2);//* sizeCell/sizeCellNormal;
+    ofsY = 20 * sizeCell/sizeCellNormal;
+    xSetFigure = ofsX;
+    ySetFigure = sizeCell * 8 + ofsY;
+
+    button.x = ofsX + sizeCell * 6 + 15 * sizeCell/sizeCellNormal;
+    button.y = ofsY + sizeCell * 8 + 15 * sizeCell/sizeCellNormal;
+    button.width = 100 * sizeCell/sizeCellNormal; 
+    button.height = 30 * sizeCell/sizeCellNormal;  
+    button.fontSize = button.fontSizeNormal * sizeCell / sizeCellNormal;
+    yButtonPlusMinus = 64;
+
+    buttonPlusFigure.x = ofsX + sizeCell * 6 + (15 + 70)* sizeCell / sizeCellNormal,
+    buttonPlusFigure.y = ofsY + sizeCell * 8 + (15 + yButtonPlusMinus)* sizeCell / sizeCellNormal,
+    buttonPlusFigure.width = 30 * sizeCell / sizeCellNormal;
+    buttonPlusFigure.height = 30 * sizeCell / sizeCellNormal;
+    buttonPlusFigure.fontSize = buttonPlusFigure.fontSizeNormal * sizeCell / sizeCellNormal;
+
+    buttonMinusFigure.x = ofsX + sizeCell * 6 + 15 * sizeCell / sizeCellNormal;
+    buttonMinusFigure.y = ofsY + sizeCell * 8 + (15 + yButtonPlusMinus) * sizeCell / sizeCellNormal;
+    buttonMinusFigure.width = 30* sizeCell / sizeCellNormal;
+    buttonMinusFigure.height = 30* sizeCell / sizeCellNormal;
+    buttonMinusFigure.fontSize =buttonMinusFigure.fontSizeNormal * sizeCell / sizeCellNormal;
+    
 }
 function drawAll() //нарисовать все
 {
@@ -251,14 +301,15 @@ function drawAll() //нарисовать все
     drawButton(button);// рисуем кнопку
     drawButton(buttonMinusFigure);
     drawButton(buttonPlusFigure);
-    drawText('Число фигур:', 17, ofsX + sizeCell * 6 + 15, ofsY + sizeCell * 8 + 15 + 59);
-    let xText = Math.trunc(quantityFigure) < 10 ? ofsX + sizeCell * 6 + 15 + 43 : ofsX + sizeCell * 6 + 15 + 36;
-    drawText(Math.trunc(quantityFigure)+'', 25, xText, ofsY + sizeCell * 8 + 15 + 89);
+    drawText('Число фигур:', 17 * sizeCell / sizeCellNormal, ofsX + sizeCell * 6 + 15 * sizeCell / sizeCellNormal, ofsY + sizeCell * 8 + (15 + 59) * sizeCell / sizeCellNormal);
+    let xText = Math.trunc(quantityFigure) < 10 ? ofsX + sizeCell * 6 + (15 + 43) * sizeCell / sizeCellNormal :
+                                                ofsX + sizeCell * 6 +( 15 + 36) * sizeCell / sizeCellNormal;
+    drawText(Math.trunc(quantityFigure)+'', 25 * sizeCell / sizeCellNormal, xText, ofsY + sizeCell * 8 + (15 + 89) * sizeCell / sizeCellNormal);
     if (bigText.being==true)// рисуем текс по середине
     {    
         context.fillStyle = "rgba(100,100,255,0.5)";
-        context.fillRect(canvasWidth/2-canvasWidth,canvasHeight/2-200,canvasWidth*2,100);
-        drawTextCenterScreen(bigText.text, 'Arial', 35, resultCheck==1?'#33FF33':'#FF3333',ofsY + sizeCell*4);
+        context.fillRect(1,canvasHeight/2 - 200 * sizeCell / sizeCellNormal,canvasWidth,100 * sizeCell / sizeCellNormal);
+        drawTextCenterScreen(bigText.text, 'Arial', 35 * sizeCell / sizeCellNormal, resultCheck==1?'#33FF33':'#FF3333',/*ofsY +*/ canvasHeight/2 - 140 * sizeCell / sizeCellNormal);
     }
     if (modeGame==0)
     {
@@ -268,11 +319,27 @@ function drawAll() //нарисовать все
         color = 'white'//'rgb(100,255,100)';
         font = "Arial";
         fontSize = 25;
-        context.fillStyle = "rgba(100,100,255,0.5)";
-        context.fillRect(canvasWidth/2-canvasWidth,y-yStep,canvasWidth*2,yStep*4);
-        drawTextCenterScreen('Здравствуйте! Это приложение для тренировки памяти.', font, fontSize, color, y);
-        drawTextCenterScreen('Сначала на поле появится фигуры, а затем исчезнут.', font, fontSize, color, y+yStep)
-        drawTextCenterScreen('Вам нужно будет раставить фигуры, так как они стояли ранее.', font, fontSize, color, y+yStep*2);
+        if (canvasWidth>750 || canvasWidth/canvasHeight>1.3)
+        {
+            context.fillStyle = "rgba(100,100,255,0.5)";
+            context.fillRect(1,y-yStep * sizeCell / sizeCellNormal,canvasWidth ,yStep*4 * sizeCell / sizeCellNormal);
+            drawTextCenterScreen('Здравствуйте! Это приложение для тренировки памяти.', font, fontSize * sizeCell / sizeCellNormal, color, y);
+            drawTextCenterScreen('Сначала на поле появится фигуры, а затем исчезнут.', font, fontSize * sizeCell / sizeCellNormal, color, y+yStep * sizeCell / sizeCellNormal)
+            drawTextCenterScreen('Вам нужно будет раставить фигуры, так как они стояли ранее.', font , fontSize * sizeCell / sizeCellNormal, color, y+yStep*2 * sizeCell / sizeCellNormal);
+        }
+        else
+        {
+            y = ofsY + sizeCell*2;
+            context.fillStyle = "rgba(100,100,255,0.5)";
+            context.fillRect(1,y-yStep * sizeCell / sizeCellNormal,canvasWidth ,yStep*8 * sizeCell / sizeCellNormal);
+            drawTextCenterScreen('Здравствуйте! Это приложение', font, fontSize * sizeCell / sizeCellNormal, color, y);
+            drawTextCenterScreen('для тренировки памяти. Сначала ', font, fontSize * sizeCell / sizeCellNormal, color, y+yStep * sizeCell / sizeCellNormal)
+            drawTextCenterScreen('на поле появится фигуры,', font , fontSize * sizeCell / sizeCellNormal, color, y+yStep*2 * sizeCell / sizeCellNormal);
+            drawTextCenterScreen('а затем изчеснут.', font , fontSize * sizeCell / sizeCellNormal, color, y+yStep*3 * sizeCell / sizeCellNormal);
+            drawTextCenterScreen('Вам нужно будет раставить ', font , fontSize * sizeCell / sizeCellNormal, color, y+yStep*4 * sizeCell / sizeCellNormal);
+            drawTextCenterScreen('фигуры, так как они стояли ранее.', font , fontSize * sizeCell / sizeCellNormal, color, y+yStep*5* sizeCell / sizeCellNormal);
+        
+        }
 
         //drawText('Здравствуйте! Это приложение для тренировки памяти.', 20,x,y,color);
         //drawText('Сначала на поле появится фигуры, а затем исчезнут.', 20,x,y+30,color);
@@ -301,7 +368,7 @@ function drawChessBoard()// нарисовать доску
         }
     }
     context.fillStyle = 'rgb(0,0,0)';
-    context.font = '12px Arial';
+    context.font = 12*sizeCell/sizeCellNormal+'px Arial';
     for (let i = 0; i < 8;i++)
     {
         
@@ -821,6 +888,12 @@ function update()// обновление
     if (mouseLeftClick())
     {
         flagClick = true;
+    }
+    window.onresize = function(){
+
+        canvasWidth=canvas.width = document.documentElement.clientWidth;
+        canvasHeight=canvas.height = document.documentElement.clientHeight;
+        updatePropertyForResize(canvasWidth,canvasHeight);
     }
     if (modeGame==0)// режим приветствия
     {
