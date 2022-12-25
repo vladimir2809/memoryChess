@@ -21,6 +21,12 @@ var arrFigureRand = [];
 var arrCheckFigure = [];
 var resultCheck = 0;
 var quantityFigure = 3;
+var ADV = {
+    timerOn:false,
+    time: 0,
+    timeOld:0,
+    maxTime: 180000,
+};
 var FigureCheck = {
     xCell:null,
     yCell:null,
@@ -106,11 +112,43 @@ var bigText = {
     x:null,
     y:null,
     text:'',
+    timerOn:false,
+    maxTime:2000,
+    time:0,
+    timeOld:0,
 }
 window.addEventListener('load', function () {
-    init();
+    YaGames
+    .init()
+    .then(ysdk => {
+        console.log('Yandex SDK initialized');
+        window.ysdk = ysdk;
+        //ysdk.adv.showFullscreenAdv({
+        //    callbacks: {
+        //        onClose: function () {
+        //            modeGame = 1;
+        //            console.log('adversting close');
+
+        //        },
+        //        onOpen: function () {
+        //            //modeGame = 1;
+        //            console.log('adversting open');
+        //        },
+        //        onError: function () {
+        //            modeGame = 1;
+        //            console.log('adversting Error');
+
+        //        },
+        //        onOffline: function () {
+        //            modeGame = 1;
+        //        }
+        //    },
+        //});
+        initGame();
+    });
+  
 });
-function init()
+function initGame()
 {
     canvas = document.getElementById("canvas");
     context = canvas.getContext("2d");
@@ -218,16 +256,20 @@ function drawAll() //нарисовать все
     drawText(Math.trunc(quantityFigure)+'', 25, xText, ofsY + sizeCell * 8 + 15 + 89);
     if (bigText.being==true)// рисуем текс по середине
     {    
-        drawTextCenterScreen(bigText.text, 'Arial', 35, resultCheck==1?'Green':'Red',ofsY + sizeCell*4);
+        context.fillStyle = "rgba(100,100,255,0.5)";
+        context.fillRect(canvasWidth/2-canvasWidth,canvasHeight/2-200,canvasWidth*2,100);
+        drawTextCenterScreen(bigText.text, 'Arial', 35, resultCheck==1?'#33FF33':'#FF3333',ofsY + sizeCell*4);
     }
     if (modeGame==0)
     {
         let x = ofsX + sizeCell*0-20;
         let y = ofsY + sizeCell*4;
         let yStep = 40;
-        color = 'Green';
+        color = 'white'//'rgb(100,255,100)';
         font = "Arial";
         fontSize = 25;
+        context.fillStyle = "rgba(100,100,255,0.5)";
+        context.fillRect(canvasWidth/2-canvasWidth,y-yStep,canvasWidth*2,yStep*4);
         drawTextCenterScreen('Здравствуйте! Это приложение для тренировки памяти.', font, fontSize, color, y);
         drawTextCenterScreen('Сначала на поле появится фигуры, а затем исчезнут.', font, fontSize, color, y+yStep)
         drawTextCenterScreen('Вам нужно будет раставить фигуры, так как они стояли ранее.', font, fontSize, color, y+yStep*2);
@@ -780,13 +822,35 @@ function update()// обновление
     {
         flagClick = true;
     }
-    if (modeGame==0)// режим создания нового игрового цикла
+    if (modeGame==0)// режим приветствия
     {
         button.text = 'Старт';
         if (flagClick==true && checkInObj(button,mouseX,mouseY))
         { 
-            modeGame = 1;
             flagClick = false;
+            ysdk.adv.showFullscreenAdv({
+                callbacks: {
+                    onClose: function (){
+                        modeGame = 1;
+                        console.log('adversting close');
+                  
+                    },
+                    onOpen: function (){
+                      //modeGame = 1;
+                      console.log('adversting open');
+                    },
+                    onError: function (){
+                        modeGame = 1;
+                        console.log('adversting Error');
+                  
+                    },
+                    onOffline: function (){
+                      modeGame = 1;
+                      console.log('adversting offline');
+                  
+                    },
+                }
+            });
         }
 
     }
@@ -836,7 +900,18 @@ function update()// обновление
     {
         button.text = 'Проверить';
         moveFigures();
-      
+        if (bigText.timerOn == false)
+        {
+            bigText.timerOn = true;
+            bigText.being = true;
+            bigText.time = bigText.timeOld = new Date().getTime();
+            bigText.text = 'Раставьте фигуры.';
+        }
+        bigText.time = new Date().getTime();
+        if (bigText.timerOn==true && bigText.time>bigText.timeOld+bigText.maxTime)
+        {
+            bigText.being = false;
+        }
         if (flagClick==true && checkInObj(button,mouseX,mouseY) && calcFigureOnBoard()>0)
         {
             checkFigureOnBoard();
@@ -856,6 +931,7 @@ function update()// обновление
     }
     if (modeGame==4)// режим показа результатов 
     {
+        bigText.timerOn = false;
         button.text = 'Далее';
       
         if (flagClick==true && checkInObj(button,mouseX,mouseY))
@@ -867,7 +943,48 @@ function update()// обновление
             }
             resultCheck = 0;
             bigText.being = false;
-            modeGame = 1;
+            if (ADV.timerOn==false)
+            {
+                ADV.timerOn = true;
+                ADV.time = ADV.timeOld = new Date().getTime();
+            }
+            if (ADV.timerOn==true)
+            {
+                ADV.time = new Date().getTime();
+                console.log(ADV.time - ADV.timeOld);
+            }
+            if (ADV.time > ADV.timeOld + ADV.maxTime)
+            {
+                ADV.timeOld = new Date().getTime();
+                ysdk.adv.showFullscreenAdv({
+                    callbacks: {
+                        onClose: function () {
+                            modeGame = 1;
+                            console.log('adversting close');
+
+                        },
+                        onOpen: function () {
+                            //modeGame = 1;
+                            console.log('adversting open');
+                        },
+                        onError: function () {
+                            modeGame = 1;
+                            console.log('adversting Error');
+
+                        },
+                        onOffline: function () {
+                            modeGame = 1;
+                            console.log('adversting offline');
+
+                        },
+                    }
+                });
+            }
+            else
+            {
+                modeGame = 1;
+            }
+           
 
         }
     }
@@ -893,8 +1010,10 @@ function update()// обновление
 }
 function initFigure()// инициализировать фигуры нарезка из тайтла
 {
-    let width = 33.3;
-    let dist = 19.75;
+    //let width = 33.3;
+    //let dist = 19.75;
+    let width = 60;
+    let dist = 0;
     let color = 0;
     for (let i = 0; i <arrNameFigure.length*2;i++)
     {
@@ -902,8 +1021,8 @@ function initFigure()// инициализировать фигуры нарез
         let figureOne = clone(Figure);
         figureOne.name = arrNameFigure[i % arrNameFigure.length];
         figureOne.color = color;
-        figureOne.xSp = 0 + (dist + width) * (i % arrNameFigure.length);
-        figureOne.ySp = color == 0 ? 0 : 42;
+        figureOne.xSp = -3.25 + (dist + width) * (i % arrNameFigure.length);
+        figureOne.ySp = color == 0 ? -3 : 57;
         figureOne.spWidth = width;
         figureOne.spHeight = width;
         arrFigure.push(figureOne);
