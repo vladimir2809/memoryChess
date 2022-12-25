@@ -89,7 +89,7 @@ var button = {
     width:100,
     height: 30,
     text: 'Проверить',
-    fontSizeNormal: 27,
+    fontSizeNormal: 26,
     fontSize: this.fontSizeNormal,
 }
 var yButtonPlusMinus = 64;
