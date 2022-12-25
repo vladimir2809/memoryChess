@@ -2,7 +2,7 @@
 var canvas;
 var canvasWidth = 1800;
 var canvasHeight = 1000;
-var sizeCellNormal = 60;
+var sizeCellNormal = 80;
 var sizeCell = sizeCellNormal;
 var arrSimbol = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',];
 var arrNameFigure = ['king','queen','rook','bishop','knight','pawn'];
@@ -89,7 +89,7 @@ var button = {
     width:100,
     height: 30,
     text: 'Проверить',
-    fontSizeNormal: 18,
+    fontSizeNormal: 27,
     fontSize: this.fontSizeNormal,
 }
 var yButtonPlusMinus = 64;
@@ -99,7 +99,7 @@ var buttonPlusFigure = {
     width:30,
     height: 30,
     text: '+',
-    fontSizeNormal: 28,
+    fontSizeNormal: 36,
     fontSize: this.fontSizeNormal,
 }
 var buttonMinusFigure = {
@@ -108,7 +108,7 @@ var buttonMinusFigure = {
     width:30,
     height: 30,
     text: '-',
-    fontSizeNormal: 28,
+    fontSizeNormal: 36,
     fontSize: this.fontSizeNormal,
 }
 var bigText = {
@@ -197,40 +197,51 @@ function initGame()
 }
 function updatePropertyForResize(canvasWidth,canvasHeight)
 {
-    if (canvasWidth<500)
+    if (canvasWidth<700 || canvasHeight<sizeCellNormal*10)
     {
-        sizeCell = canvasWidth / 10;;
+        if (canvasWidth<canvasHeight)
+        {
+            sizeCell = canvasWidth / 10;;
+        }
+        else 
+        {
+            sizeCell = canvasHeight/ 10;;
+        }
+         console.log('sizeno2');
     }
-    else if (canvasHeight<sizeCellNormal*12)
-    {
-        sizeCell = canvasHeight / 12;
-    }
+    //else if (canvasHeight<sizeCellNormal*10.5)
+    //{
+    //    sizeCell = canvasHeight / 10.5;
+    //     console.log('sizeno1');
+    //}
+
     else
     {
         sizeCell = sizeCellNormal;
+        console.log('sizenorm');
     }
     ofsX = (canvasWidth / 2 - (sizeCell * 8) / 2);//* sizeCell/sizeCellNormal;
-    ofsY = 20 * sizeCell/sizeCellNormal;
+    ofsY = (canvasHeight/ 2 - (sizeCell * 10) / 2)//20 * sizeCell/sizeCellNormal;
     xSetFigure = ofsX;
     ySetFigure = sizeCell * 8 + ofsY;
 
     button.x = ofsX + sizeCell * 6 + 15 * sizeCell/sizeCellNormal;
     button.y = ofsY + sizeCell * 8 + 15 * sizeCell/sizeCellNormal;
-    button.width = 100 * sizeCell/sizeCellNormal; 
-    button.height = 30 * sizeCell/sizeCellNormal;  
+    button.width = 133 * sizeCell/sizeCellNormal; 
+    button.height = 40 * sizeCell/sizeCellNormal;  
     button.fontSize = button.fontSizeNormal * sizeCell / sizeCellNormal;
-    yButtonPlusMinus = 64;
+    yButtonPlusMinus = 85;
 
-    buttonPlusFigure.x = ofsX + sizeCell * 6 + (15 + 70)* sizeCell / sizeCellNormal,
+    buttonPlusFigure.x = ofsX + sizeCell * 6 + (15 + 93)* sizeCell / sizeCellNormal,
     buttonPlusFigure.y = ofsY + sizeCell * 8 + (15 + yButtonPlusMinus)* sizeCell / sizeCellNormal,
-    buttonPlusFigure.width = 30 * sizeCell / sizeCellNormal;
-    buttonPlusFigure.height = 30 * sizeCell / sizeCellNormal;
+    buttonPlusFigure.width = 40 * sizeCell / sizeCellNormal;
+    buttonPlusFigure.height = 40 * sizeCell / sizeCellNormal;
     buttonPlusFigure.fontSize = buttonPlusFigure.fontSizeNormal * sizeCell / sizeCellNormal;
 
     buttonMinusFigure.x = ofsX + sizeCell * 6 + 15 * sizeCell / sizeCellNormal;
     buttonMinusFigure.y = ofsY + sizeCell * 8 + (15 + yButtonPlusMinus) * sizeCell / sizeCellNormal;
-    buttonMinusFigure.width = 30* sizeCell / sizeCellNormal;
-    buttonMinusFigure.height = 30* sizeCell / sizeCellNormal;
+    buttonMinusFigure.width = 40* sizeCell / sizeCellNormal;
+    buttonMinusFigure.height = 40* sizeCell / sizeCellNormal;
     buttonMinusFigure.fontSize =buttonMinusFigure.fontSizeNormal * sizeCell / sizeCellNormal;
     
 }
@@ -301,10 +312,10 @@ function drawAll() //нарисовать все
     drawButton(button);// рисуем кнопку
     drawButton(buttonMinusFigure);
     drawButton(buttonPlusFigure);
-    drawText('Число фигур:', 17 * sizeCell / sizeCellNormal, ofsX + sizeCell * 6 + 15 * sizeCell / sizeCellNormal, ofsY + sizeCell * 8 + (15 + 59) * sizeCell / sizeCellNormal);
-    let xText = Math.trunc(quantityFigure) < 10 ? ofsX + sizeCell * 6 + (15 + 43) * sizeCell / sizeCellNormal :
-                                                ofsX + sizeCell * 6 +( 15 + 36) * sizeCell / sizeCellNormal;
-    drawText(Math.trunc(quantityFigure)+'', 25 * sizeCell / sizeCellNormal, xText, ofsY + sizeCell * 8 + (15 + 89) * sizeCell / sizeCellNormal);
+    drawText('Число фигур:', 22 * sizeCell / sizeCellNormal, ofsX + sizeCell * 6 + 15 * sizeCell / sizeCellNormal, ofsY + sizeCell * 8 + (15 + 78) * sizeCell / sizeCellNormal);
+    let xText = Math.trunc(quantityFigure) < 10 ? ofsX + sizeCell * 6 + (15 + 58) * sizeCell / sizeCellNormal :
+                                                ofsX + sizeCell * 6 +( 15 + 48) * sizeCell / sizeCellNormal;
+    drawText(Math.trunc(quantityFigure)+'', 35 * sizeCell / sizeCellNormal, xText, ofsY + sizeCell * 8 + (15 + 117) * sizeCell / sizeCellNormal);
     if (bigText.being==true)// рисуем текс по середине
     {    
         context.fillStyle = "rgba(100,100,255,0.5)";
@@ -632,10 +643,10 @@ function updateFiguresRand(quantity)// обновить фигруы в памя
                 figureRandOne.xCell = randomInteger(0, 7);
                 figureRandOne.yCell = randomInteger(0, 7);
 
-                for (let i = 0; i < arrFigureRand.length; i++) 
+                for (let j = 0; j < arrFigureRand.length; j++) 
                 {
-                    if (figureRandOne.xCell == arrFigureRand[i].xCell &&
-                        figureRandOne.yCell == arrFigureRand[i].yCell)
+                    if (figureRandOne.xCell == arrFigureRand[j].xCell &&
+                        figureRandOne.yCell == arrFigureRand[j].yCell)
                     {
                         flag = true;
                     }
